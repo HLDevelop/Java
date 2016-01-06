@@ -1,0 +1,132 @@
+package com.example.harry.kawibawibo;
+
+import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
+import android.view.Menu;
+import android.view.MenuItem;
+import android.view.View;
+import android.widget.Button;
+import android.widget.ImageView;
+import android.widget.TextView;
+import android.widget.Toast;
+
+public class MainActivity extends AppCompatActivity {
+
+    private Button rock;
+    private Button scissors;
+    private Button paper;
+    private ImageView image;
+    private TextView scoreText;
+    private TextView highScoreText;
+    private int newScore = 0;
+    private int oldHighScore = 0;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+        image = (ImageView) findViewById(R.id.imageView);
+        rock = (Button) findViewById(R.id.btnrock);
+        scissors = (Button) findViewById(R.id.btnscissor);
+        paper = (Button) findViewById(R.id.btnpaper);
+        scoreText = (TextView) findViewById(R.id.scoreText);
+        highScoreText = (TextView) findViewById(R.id.highScoreText);
+
+        scoreText.setText("Win Streak: 0");
+        highScoreText.setText("High Score: 0");
+
+        rock.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                double computerChoice = Math.random();
+                if (computerChoice < 0.34) {
+                    Toast.makeText(MainActivity.this, "무승부 - It was a draw!\nThe Computer chose Rock!", Toast.LENGTH_SHORT).
+                            show();
+                } else if (computerChoice <= 0.67) {
+                    Toast.makeText(MainActivity.this, "승리 - Victory!\nThe Computer chose Scissors!", Toast.LENGTH_SHORT).show();
+                    newScore++;
+                    String total = Integer.toString(newScore);
+                    scoreText.setText("Win Streak: " + total);
+
+                } else {
+                    Toast.makeText(MainActivity.this, "패배 - Defeat!\nThe Computer chose Paper!", Toast.LENGTH_SHORT).show();
+                    newScore = 0;
+                    String total = Integer.toString(newScore);
+                    scoreText.setText("Win Streak: " + total);
+                }
+                if (newScore > oldHighScore) {
+                    oldHighScore = newScore;
+                    String highScoreTotal = Integer.toString(oldHighScore);
+                    highScoreText.setText("HIGH SCORE: " + highScoreTotal);
+                }
+            }
+        });
+
+    scissors.setOnClickListener(new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            double computerChoice = Math.random();
+            if (computerChoice < 0.34) {
+                Toast.makeText(MainActivity.this, "패배 - Defeat!\nThe Computer chose Rock!", Toast.LENGTH_SHORT).show();
+                newScore = 0;
+                String total = Integer.toString(newScore);
+                scoreText.setText("Win Streak: " + total);
+            } else if (computerChoice <= 0.67) {
+                Toast.makeText(MainActivity.this, "무승부 - It was a draw!\nThe Computer chose Scissors!", Toast.LENGTH_SHORT).show();
+            } else {
+                Toast.makeText(MainActivity.this, "승리 - Victory!\nThe Computer chose Paper!", Toast.LENGTH_SHORT).show();
+                newScore++;
+                String total = Integer.toString(newScore);
+                scoreText.setText("Win Streak: " + total);
+            }
+            if (newScore > oldHighScore) {
+                oldHighScore = newScore;
+                String highScoreTotal = Integer.toString(oldHighScore);
+                highScoreText.setText("HIGH SCORE: " + highScoreTotal);
+            }
+        }
+    });
+
+    paper.setOnClickListener(new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            double computerChoice = Math.random();
+            if (computerChoice < 0.34) {
+                Toast.makeText(MainActivity.this, "승리 - Victory!\nThe Computer chose Rock!",Toast.LENGTH_SHORT).show();
+                newScore++;
+                String total = Integer.toString(newScore);
+                scoreText.setText("Win Streak: " + total);
+            } else if (computerChoice <= 0.67) {
+                Toast.makeText(MainActivity.this, "패배 - Defeat!\nThe Computer chose Scissors!", Toast.LENGTH_SHORT).show();
+                newScore = 0;
+                String total = Integer.toString(newScore);
+                scoreText.setText("Win Streak: " + total);
+            } else {
+                Toast.makeText(MainActivity.this, "무승부 - It was a draw!\nThe Computer chose Paper!",Toast.LENGTH_SHORT).show();
+            }
+            if (newScore > oldHighScore) {
+                oldHighScore = newScore;
+                String highScoreTotal = Integer.toString(oldHighScore);
+                highScoreText.setText("HIGH SCORE: " + highScoreTotal);
+            }
+        }
+    });
+}
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
+
+        //noinspection SimplifiableIfStatement
+        if (id == R.id.action_settings) {
+            return true;
+        }
+
+        return super.onOptionsItemSelected(item);
+    }
+}
