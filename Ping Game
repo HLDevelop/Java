@@ -1,0 +1,195 @@
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
+
+public class Ping extends GameThread{
+
+    //Image of ball
+    private Bitmap mBall;
+
+    //The X and Y position of the ball
+    private float ballX = -100;
+    private float ballY = -100;
+
+    //The ball speed in X and Y
+    private float ballSpeedX = 0;
+    private float ballSpeedY = 0;
+
+
+    //Player paddle image
+    private Bitmap mPaddle;
+
+    //Paddle's x 
+    private float playerX = 0;
+
+    //The paddle speed
+    private float mPaddleSpeedX = 0;
+
+    //Green Ball
+    private Bitmap greenBall;
+    private float greenX = -100;
+    private float greenY = -100;
+
+    //RedBall
+    private Bitmap redBall;
+    private float[] redX = {-100,-100,-100};
+    private float[] redY = new float[3];
+
+    private float minDistanceBetweenBallAndPlayer = 0;
+
+    public TheGame(GameView gameView) {
+        //House keeping
+        super(gameView);
+
+        //Prepare the images
+        mBall = BitmapFactory.decodeResource
+                (gameView.getContext().getResources(),
+                        R.drawable.small_red_ball);
+
+        mPaddle = BitmapFactory.decodeResource
+                (gameView.getContext().getResources(),
+                        R.drawable.blue_ball);
+        greenBall =  BitmapFactory.decodeResource
+                (gameView.getContext().getResources(),
+                        R.drawable.green_ball);
+        redBall =  BitmapFactory.decodeResource
+                (gameView.getContext().getResources(),
+                        R.drawable.red_ball);
+    }
+
+    @Override
+    public void setupBeginning() {
+        //Initialise speeds
+        ballSpeedX = mCanvasWidth / 3;
+        ballSpeedY = mCanvasHeight / 3;
+
+        //Place the ball in the middle of the screen.
+        //mBall.Width() and mBall.getHeigh() gives us the height and width of the image of the ball
+        ballX = mCanvasWidth / 2;
+        ballY = mCanvasHeight / 2;
+
+        //Place Paddle in the middle of the screen
+        playerX = mCanvasWidth / 2;
+
+        greenX = mCanvasWidth / 2;
+        greenY = mSmileyBall.getHeight()/2;
+
+        redX[0] = mCanvasWidth / 3;
+        redY[0] = mCanvasHeight / 3;
+
+        redX[1] = mCanvasWidth - mCanvasWidth / 3;
+        redY[1] = mCanvasHeight / 3;
+
+        redX[2] = mCanvasWidth / 2;
+        redY[2] = mCanvasHeight / 5;
+
+        //Get the minimum distance between a small ball and a bigball
+        minDistanceBetweenBallAndPlayer = (mPaddle.getWidth() / 2 + mBall.getWidth() / 2) * (mPaddle.getWidth() / 2 + mBall.getWidth() / 2);
+    }
+
+    @Override
+    protected void doDraw(Canvas canvas) {
+        //If there isn't a canvas to do nothing
+        if(canvas == null) return;
+        //House keeping
+        super.doDraw(canvas);
+        canvas.drawBitmap(mBall, ballX - mBall.getWidth() / 2, ballY - mBall.getHeight() / 2, null);
+        canvas.drawBitmap(mPaddle, playerX - mPaddle.getWidth() / 2, mCanvasHeight - mPaddle.getHeight() / 2, null);
+        //Draw SmileyBall
+        canvas.drawBitmap(mSmileyBall, greenX - greenBall.getWidth() / 2, greenY - greenBall.getHeight() / 2, null);
+        for(int i = 0; i < redX.length; i++) {
+            canvas.drawBitmap(mSadBall, redX[i] - redBall.getWidth() / 2, redY[i] - redBall.getHeight() / 2, null);
+        }
+    }
+
+
+    //This is run whenever the phone is touched by the user
+    @Override
+    protected void actionOnTouch(float x, float y) {
+        //Move the ball to the x position of the touch
+        playerX = x;
+    }
+
+
+    //This is run whenever the phone moves around its axises
+    @Override
+    protected void actionWhenPhoneMoved(float xDirection, float yDirection, float zDirection) {
+        //Change the paddle speed
+        mPaddleSpeedX = mPaddleSpeedX + 70f * xDirection;
+
+        //If paddle is outside the screen and moving further away
+        //Move it into the screen and set its speed to 0
+        if(playerX <= 0 && mPaddleSpeedX < 0) {
+            mPaddleSpeedX = 0;
+            playerX = 0;
+        }
+        if(playerX >= mCanvasWidth && mPaddleSpeedX > 0) {
+            mPaddleSpeedX = 0;
+            playerX = mCanvasWidth;
+        }
+
+    }
+
+
+   
+    @Override
+    protected void updateGame(float secondsElapsed) {
+        //If the ball moves down on the screen
+        if(ballSpeedY > 0) {
+            //Check for a paddle collision
+            updateBallCollision(playerX, mCanvasHeight);
+        }
+
+        ballX = ballX + secondsElapsed * ballSpeedX;
+        ballY = ballY + secondsElapsed * ballSpeedY;
+
+        playerX = playerX + secondsElapsed * mPaddleSpeedX;
+
+
+        //Check if the ball hits either the left side or the right side of the screen
+        if((ballX <= mBall.getWidth() / 2 && ballSpeedX < 0) || (ballX >= mCanvasWidth - mBall.getWidth() / 2 && ballSpeedX > 0) ) {
+            ballSpeedX = -ballSpeedX;
+        }
+
+        if(updateBallCollision(greenX, greenY)) {
+            //Increase score
+            updateScore(1);
+        }
+
+        for(int i = 0; i < redX.length; i++) {
+            //Perform collisions (if necessary) between SadBall in position i and the red ball
+            updateBallCollision(redX[i], redY[i]);
+        }
+
+        if(ballY <= mBall.getWidth() / 2 && ballSpeedY < 0) {
+            ballSpeedY = -ballSpeedY;
+        }
+
+        if(ballY >= mCanvasHeight) {
+            setState(GameThread.STATE_LOSE);
+        }
+
+    }
+
+    //Collision control
+    private boolean updateBallCollision(float x, float y) {
+        float distanceBetweenBallAndPaddle = (x - ballX) * (x - ballX) + (y - ballY) *(y - ballY);
+
+        if(minDistanceBetweenBallAndPlayer >= distanceBetweenBallAndPaddle) {
+            float speedOfBall = (float) Math.sqrt(ballSpeedX * ballSpeedX + ballSpeedY * ballSpeedY);
+
+            //Change the direction of the ball
+            ballSpeedX = ballX - x;
+            ballSpeedY = ballY - y;
+
+            //Get the speed after the collision
+            float newSpeedOfBall = (float) Math.sqrt(ballSpeedX * ballSpeedX + ballSpeedY * ballSpeedY);
+            ballSpeedX = ballSpeedX * speedOfBall / newSpeedOfBall;
+            ballSpeedY = ballSpeedY * speedOfBall / newSpeedOfBall;
+
+            return true;
+        }
+
+        return false;
+    }
+}
