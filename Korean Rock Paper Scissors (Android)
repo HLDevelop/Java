@@ -1,5 +1,6 @@
 package com.example.harry.kawibawibo;
 
+import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.Menu;
@@ -35,20 +36,32 @@ public class MainActivity extends AppCompatActivity {
         scoreText.setText("Win Streak: 0");
         highScoreText.setText("High Score: 0");
 
+        final MediaPlayer mp1 = MediaPlayer.create(this, raw.sound1);
+        final MediaPlayer mp2 = MediaPlayer.create(this, raw.sound2);
+        final MediaPlayer mp3 = MediaPlayer.create(this, raw.sound3);
+        final MediaPlayer win = MediaPlayer.create(this, raw.sound4);
+        final MediaPlayer lose = MediaPlayer.create(this, raw.sound5);
+        final MediaPlayer draw = MediaPlayer.create(this, raw.sound6);
+
         rock.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                mp1.start();
                 double computerChoice = Math.random();
                 if (computerChoice < 0.34) {
+                    draw.start();
                     Toast.makeText(MainActivity.this, "무승부 - It was a draw!\nThe Computer chose Rock!", Toast.LENGTH_SHORT).
                             show();
                 } else if (computerChoice <= 0.67) {
+                    win.start();
                     Toast.makeText(MainActivity.this, "승리 - Victory!\nThe Computer chose Scissors!", Toast.LENGTH_SHORT).show();
                     newScore++;
                     String total = Integer.toString(newScore);
                     scoreText.setText("Win Streak: " + total);
 
+
                 } else {
+                    lose.start();
                     Toast.makeText(MainActivity.this, "패배 - Defeat!\nThe Computer chose Paper!", Toast.LENGTH_SHORT).show();
                     newScore = 0;
                     String total = Integer.toString(newScore);
@@ -65,15 +78,19 @@ public class MainActivity extends AppCompatActivity {
     scissors.setOnClickListener(new View.OnClickListener() {
         @Override
         public void onClick(View v) {
+            mp2.start();
             double computerChoice = Math.random();
             if (computerChoice < 0.34) {
+                lose.start();
                 Toast.makeText(MainActivity.this, "패배 - Defeat!\nThe Computer chose Rock!", Toast.LENGTH_SHORT).show();
                 newScore = 0;
                 String total = Integer.toString(newScore);
                 scoreText.setText("Win Streak: " + total);
             } else if (computerChoice <= 0.67) {
+                draw.start();
                 Toast.makeText(MainActivity.this, "무승부 - It was a draw!\nThe Computer chose Scissors!", Toast.LENGTH_SHORT).show();
             } else {
+                win.start();
                 Toast.makeText(MainActivity.this, "승리 - Victory!\nThe Computer chose Paper!", Toast.LENGTH_SHORT).show();
                 newScore++;
                 String total = Integer.toString(newScore);
@@ -90,18 +107,22 @@ public class MainActivity extends AppCompatActivity {
     paper.setOnClickListener(new View.OnClickListener() {
         @Override
         public void onClick(View v) {
+            mp3.start();
             double computerChoice = Math.random();
             if (computerChoice < 0.34) {
+                win.start();
                 Toast.makeText(MainActivity.this, "승리 - Victory!\nThe Computer chose Rock!",Toast.LENGTH_SHORT).show();
                 newScore++;
                 String total = Integer.toString(newScore);
                 scoreText.setText("Win Streak: " + total);
             } else if (computerChoice <= 0.67) {
+                lose.start();
                 Toast.makeText(MainActivity.this, "패배 - Defeat!\nThe Computer chose Scissors!", Toast.LENGTH_SHORT).show();
                 newScore = 0;
                 String total = Integer.toString(newScore);
                 scoreText.setText("Win Streak: " + total);
             } else {
+                draw.start();
                 Toast.makeText(MainActivity.this, "무승부 - It was a draw!\nThe Computer chose Paper!",Toast.LENGTH_SHORT).show();
             }
             if (newScore > oldHighScore) {
@@ -115,11 +136,16 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the menu; this adds items to the action bar if it is present.
+        getMenuInflater().inflate(R.menu.menu_main, menu);
         return true;
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
+        // Handle action bar item clicks here. The action bar will
+        // automatically handle clicks on the Home/Up button, so long
+        // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
 
         //noinspection SimplifiableIfStatement
