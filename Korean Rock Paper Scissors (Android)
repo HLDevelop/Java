@@ -1,7 +1,10 @@
 package com.example.harry.kawibawibo;
 
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.media.MediaPlayer;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -21,6 +24,11 @@ public class MainActivity extends AppCompatActivity {
     private TextView highScoreText;
     private int newScore = 0;
     private int oldHighScore = 0;
+    private boolean canClick = true;
+    private final Handler handler = new Handler();
+
+    private static final String myPrefsKey = "myPrefsKey";
+    private static final String key = "key";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -33,44 +41,63 @@ public class MainActivity extends AppCompatActivity {
         scoreText = (TextView) findViewById(R.id.scoreText);
         highScoreText = (TextView) findViewById(R.id.highScoreText);
 
+        final SharedPreferences prefs = this.getSharedPreferences(myPrefsKey, Context.MODE_PRIVATE);
+        oldHighScore = prefs.getInt(key, 0);
+
+
         scoreText.setText("Win Streak: 0");
         highScoreText.setText("High Score: 0");
 
-        final MediaPlayer mp1 = MediaPlayer.create(this, raw.sound1);
-        final MediaPlayer mp2 = MediaPlayer.create(this, raw.sound2);
-        final MediaPlayer mp3 = MediaPlayer.create(this, raw.sound3);
-        final MediaPlayer win = MediaPlayer.create(this, raw.sound4);
-        final MediaPlayer lose = MediaPlayer.create(this, raw.sound5);
-        final MediaPlayer draw = MediaPlayer.create(this, raw.sound6);
+
+        //final MediaPlayer mp1 = MediaPlayer.create(this, raw.sound1);
+        //final MediaPlayer mp2 = MediaPlayer.create(this, raw.sound2);
+        //final MediaPlayer mp3 = MediaPlayer.create(this, raw.sound3);
+        final MediaPlayer win = MediaPlayer.create(this, R.raw.sound4);
+        final MediaPlayer lose = MediaPlayer.create(this, R.raw.sound5);
+        final MediaPlayer draw = MediaPlayer.create(this, R.raw.sound6);
 
         rock.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mp1.start();
+                //      mp1.start();
                 double computerChoice = Math.random();
-                if (computerChoice < 0.34) {
-                    draw.start();
-                    Toast.makeText(MainActivity.this, "무승부 - It was a draw!\nThe Computer chose Rock!", Toast.LENGTH_SHORT).
-                            show();
-                } else if (computerChoice <= 0.67) {
-                    win.start();
-                    Toast.makeText(MainActivity.this, "승리 - Victory!\nThe Computer chose Scissors!", Toast.LENGTH_SHORT).show();
-                    newScore++;
-                    String total = Integer.toString(newScore);
-                    scoreText.setText("Win Streak: " + total);
+                if (canClick) {
+                    if (computerChoice < 0.34) {
+                        draw.start();
+                        Toast.makeText(MainActivity.this, "무승부 - It was a draw!\nThe Computer chose Rock!", Toast.LENGTH_SHORT).
+                                show();
+                        canClick = false;
+                        stopInput();
+                    } else if (computerChoice <= 0.67) {
+                        win.start();
+                        Toast.makeText(MainActivity.this, "승리 - Victory!\nThe Computer chose Scissors!", Toast.LENGTH_SHORT).show();
+                        newScore++;
+                        String total = Integer.toString(newScore);
+                        scoreText.setText("Win Streak: " + total);
+                        canClick = false;
+                        stopInput();
 
+                    } else {
+                        lose.start();
+                        Toast.makeText(MainActivity.this, "패배 - Defeat!\nThe Computer chose Paper!", Toast.LENGTH_SHORT).show();
+                        newScore = 0;
+                        String total = Integer.toString(newScore);
+                        scoreText.setText("Win Streak: " + total);
+                        canClick = false;
+                        stopInput();
+                    }
+
+                    if (newScore > oldHighScore) {
+                        SharedPreferences.Editor edit = prefs.edit();
+                        edit.putInt("key", newScore);
+                        edit.commit();
+                        oldHighScore = prefs.getInt(key, 0);
+                        String highScoreTotal = Integer.toString(oldHighScore);
+                        highScoreText.setText("HIGH SCORE: " + highScoreTotal);
+                    }
 
                 } else {
-                    lose.start();
-                    Toast.makeText(MainActivity.this, "패배 - Defeat!\nThe Computer chose Paper!", Toast.LENGTH_SHORT).show();
-                    newScore = 0;
-                    String total = Integer.toString(newScore);
-                    scoreText.setText("Win Streak: " + total);
-                }
-                if (newScore > oldHighScore) {
-                    oldHighScore = newScore;
-                    String highScoreTotal = Integer.toString(oldHighScore);
-                    highScoreText.setText("HIGH SCORE: " + highScoreTotal);
+                    stopInput();
                 }
             }
         });
@@ -78,28 +105,43 @@ public class MainActivity extends AppCompatActivity {
     scissors.setOnClickListener(new View.OnClickListener() {
         @Override
         public void onClick(View v) {
-            mp2.start();
+            //mp2.start();
             double computerChoice = Math.random();
-            if (computerChoice < 0.34) {
-                lose.start();
-                Toast.makeText(MainActivity.this, "패배 - Defeat!\nThe Computer chose Rock!", Toast.LENGTH_SHORT).show();
-                newScore = 0;
-                String total = Integer.toString(newScore);
-                scoreText.setText("Win Streak: " + total);
-            } else if (computerChoice <= 0.67) {
-                draw.start();
-                Toast.makeText(MainActivity.this, "무승부 - It was a draw!\nThe Computer chose Scissors!", Toast.LENGTH_SHORT).show();
+            if (canClick) {
+                if (computerChoice < 0.34) {
+                    lose.start();
+                    Toast.makeText(MainActivity.this, "패배 - Defeat!\nThe Computer chose Rock!", Toast.LENGTH_SHORT).show();
+                    newScore = 0;
+                    String total = Integer.toString(newScore);
+                    scoreText.setText("Win Streak: " + total);
+                    canClick = false;
+                    stopInput();
+                } else if (computerChoice <= 0.67) {
+                    draw.start();
+                    Toast.makeText(MainActivity.this, "무승부 - It was a draw!\nThe Computer chose Scissors!", Toast.LENGTH_SHORT).show();
+                    canClick = false;
+                    stopInput();
+                } else {
+                    win.start();
+                    Toast.makeText(MainActivity.this, "승리 - Victory!\nThe Computer chose Paper!", Toast.LENGTH_SHORT).show();
+                    newScore++;
+                    String total = Integer.toString(newScore);
+                    scoreText.setText("Win Streak: " + total);
+                    canClick = false;
+                    stopInput();
+                }
+
+                if (newScore > oldHighScore) {
+                    SharedPreferences.Editor edit = prefs.edit();
+                    edit.putInt("key", newScore);
+                    edit.commit();
+                    oldHighScore = prefs.getInt(key, 0);
+                    String highScoreTotal = Integer.toString(oldHighScore);
+                    highScoreText.setText("HIGH SCORE: " + highScoreTotal);
+                }
+
             } else {
-                win.start();
-                Toast.makeText(MainActivity.this, "승리 - Victory!\nThe Computer chose Paper!", Toast.LENGTH_SHORT).show();
-                newScore++;
-                String total = Integer.toString(newScore);
-                scoreText.setText("Win Streak: " + total);
-            }
-            if (newScore > oldHighScore) {
-                oldHighScore = newScore;
-                String highScoreTotal = Integer.toString(oldHighScore);
-                highScoreText.setText("HIGH SCORE: " + highScoreTotal);
+                stopInput();
             }
         }
     });
@@ -107,28 +149,43 @@ public class MainActivity extends AppCompatActivity {
     paper.setOnClickListener(new View.OnClickListener() {
         @Override
         public void onClick(View v) {
-            mp3.start();
+            //mp3.start();
             double computerChoice = Math.random();
-            if (computerChoice < 0.34) {
-                win.start();
-                Toast.makeText(MainActivity.this, "승리 - Victory!\nThe Computer chose Rock!",Toast.LENGTH_SHORT).show();
-                newScore++;
-                String total = Integer.toString(newScore);
-                scoreText.setText("Win Streak: " + total);
-            } else if (computerChoice <= 0.67) {
-                lose.start();
-                Toast.makeText(MainActivity.this, "패배 - Defeat!\nThe Computer chose Scissors!", Toast.LENGTH_SHORT).show();
-                newScore = 0;
-                String total = Integer.toString(newScore);
-                scoreText.setText("Win Streak: " + total);
+            if (canClick) {
+                if (computerChoice < 0.34) {
+                    win.start();
+                    Toast.makeText(MainActivity.this, "승리 - Victory!\nThe Computer chose Rock!", Toast.LENGTH_SHORT).show();
+                    newScore++;
+                    String total = Integer.toString(newScore);
+                    scoreText.setText("Win Streak: " + total);
+                    canClick = false;
+                    stopInput();
+               } else if (computerChoice <= 0.67) {
+                    lose.start();
+                    Toast.makeText(MainActivity.this, "패배 - Defeat!\nThe Computer chose Scissors!", Toast.LENGTH_SHORT).show();
+                    newScore = 0;
+                    String total = Integer.toString(newScore);
+                    scoreText.setText("Win Streak: " + total);
+                    canClick = false;
+                    stopInput();
+                } else {
+                    draw.start();
+                    Toast.makeText(MainActivity.this, "무승부 - It was a draw!\nThe Computer chose Paper!", Toast.LENGTH_SHORT).show();
+                    canClick = false;
+                    stopInput();
+                }
+
+                if (newScore > oldHighScore) {
+                    SharedPreferences.Editor edit = prefs.edit();
+                    edit.putInt("key", newScore);
+                    edit.commit();
+                    oldHighScore = prefs.getInt(key, 0);
+                    String highScoreTotal = Integer.toString(oldHighScore);
+                    highScoreText.setText("HIGH SCORE: " + highScoreTotal);
+                }
+
             } else {
-                draw.start();
-                Toast.makeText(MainActivity.this, "무승부 - It was a draw!\nThe Computer chose Paper!",Toast.LENGTH_SHORT).show();
-            }
-            if (newScore > oldHighScore) {
-                oldHighScore = newScore;
-                String highScoreTotal = Integer.toString(oldHighScore);
-                highScoreText.setText("HIGH SCORE: " + highScoreTotal);
+                stopInput();
             }
         }
     });
@@ -141,6 +198,25 @@ public class MainActivity extends AppCompatActivity {
         return true;
     }
 
+    public boolean stopInput() {
+        handler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                canClick = true;
+            }
+        }, 2000);
+        return true;
+    }
+
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        final SharedPreferences prefs = this.getSharedPreferences("myPrefsKey", Context.MODE_PRIVATE);
+        oldHighScore = prefs.getInt(key, 0);
+        String highScoreTotal = Integer.toString(oldHighScore);
+        highScoreText.setText("HIGH SCORE: " + highScoreTotal);
+    }
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         // Handle action bar item clicks here. The action bar will
