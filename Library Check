@@ -1,0 +1,28 @@
+import java.util.HashMap;
+
+public class Library{
+ public Library(){
+ }
+  
+ public void finishedBooks(HashMap<String,Boolean> library){
+   if(library.size() < 1){
+   System.out.println("HashMap is empty");
+   }else{
+     for(String book : library.keySet()){
+     if(library.get(book) == true){
+       System.out.println(book);}
+     }
+  }
+ }
+  public static void main(String[] args){
+  HashMap<String,Boolean> myBooks = new HashMap<String,Boolean>();
+    
+    myBooks.put("Lord of the Rings", true);
+    myBooks.put("The Ice Dragon", false);
+    myBooks.put("The Man in the High Castle", true);
+    myBooks.put("Farenheit 451", false);
+    
+    Library myLibrary = new Library();
+    myLibrary.finishedBooks(myBooks);
+  }
+}
