@@ -1,0 +1,37 @@
+import java.util.ArrayList;
+
+public class GradeCheck{
+ public GradeCheck(){
+ }
+  
+  public int sum = 0;
+  
+ public int getAverage(ArrayList<Integer> grades){
+	if(grades.size() < 1){
+  System.out.println("The ArrayList is empty");
+   return 0;
+  }else{
+    sum = 0;
+  }
+   
+   for(Integer grade : grades){
+     sum = sum+grade;
+   }
+     int average = sum / grades.size();
+   System.out.println("Average grade: " + average);
+   return average;
+ }
+  
+  public static void main(String[] args){
+    ArrayList<Integer> myClassroom = new ArrayList<Integer>();
+    myClassroom.add(88);
+    myClassroom.add(62);
+    myClassroom.add(95);
+    myClassroom.add(81);
+    myClassroom.add(59);
+    myClassroom.add(95);
+    
+    GradeCheck myCheck = new GradeCheck();
+    myCheck.getAverage(myClassroom);
+  }
+}
